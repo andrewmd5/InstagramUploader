@@ -113,7 +113,7 @@ class InstagramUploader
         }
     }
 
-    public function postImage()
+    public function PostImage()
     {
         $guid = $this->GenerateGuid();
         $device_id = "android-" . $guid;
