@@ -16,6 +16,8 @@ I lost it all, sorry. Will attempt to rewrite it.
 
 Test using my web app [here](https://andrew.im/instagram/)
 
+Or check my test account [here](https://www.instagram.com/automationbot/)
+
 ### Why does it need a password?
 
 Because this uses the same API calls as the official app, which uses your password. I was reverseing OAuth to allow for uploading but never got to finishing it. 
