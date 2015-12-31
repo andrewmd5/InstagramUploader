@@ -93,15 +93,15 @@ class InstagramUploader
 
     function GetPostData($filename)
     {
-        $path = 'C:/xampp/htdocs/apps/instagram/uploads/' . $filename;
+        $path = getcwd() .'/uploads/' . $filename;
         if (!$path) {
             echo "The image doesn't exist " . $path;
         } else {
             $withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $filename);
-            $convertImageToJpg = $this->convertImage($path, 'C:/xampp/htdocs/apps/instagram/uploads/' . 'converted_' . $withoutExt . '.jpg', 100);
+            $convertImageToJpg = $this->convertImage($path, './uploads/' . 'converted_' . $withoutExt . '.jpg', 100);
             if ($convertImageToJpg) {
-                $convertedPath = 'C:/xampp/htdocs/apps/instagram/uploads/' . 'converted_' . $withoutExt . '.jpg';
-                $instagramPath = 'C:/xampp/htdocs/apps/instagram/uploads/' . 'instagram_' . $withoutExt . '.jpg';
+                $convertedPath =  getcwd() .'/uploads/' . 'converted_' . $withoutExt . '.jpg';
+                $instagramPath =  getcwd() .'/uploads/' . 'instagram_' . $withoutExt . '.jpg';
                 $this->squareImage($convertedPath, $instagramPath);
                 $post_data = array('device_timestamp' => time(),
                     'photo' => '@' . $instagramPath);
@@ -164,7 +164,7 @@ class InstagramUploader
                             if ($status == 'ok') {
                                 // Remove and line breaks from the caption
                                 $caption = preg_replace("/\r|\n/", "", $this->caption);
-                                echo($caption);
+                               
 
                                 $media_id = $obj['media_id'];
                                 $device_id = "android-" . $guid;
@@ -185,7 +185,7 @@ class InstagramUploader
                                     } else {
                                         $obj = @json_decode($conf[1], true);
                                         $status = $obj['status'];
-                                        echo($status);
+                                  
                                         if ($status != 'fail') {
                                             echo "Success";
                                             $this->cleanImages();
@@ -237,7 +237,6 @@ class InstagramUploader
        }
 
         $response = curl_exec($ch);
-		//echo($response);
         $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
