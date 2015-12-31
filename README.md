@@ -24,7 +24,13 @@ Because this uses the same API calls as the official app, which uses your passwo
 
 ### It gives me a media id but there is no image on my account
 
-Congratulations, your account now requires you to solve a captcha to upload. 
+Congratulations, your account now requires you to solve a captcha to upload. Solve it on your phone (or write a method to retreive it in the browser) and get back to normal.
+
+### Contributing 
+
+Submit a pull request. 
+
+
 
 
 
