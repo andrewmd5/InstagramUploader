@@ -78,22 +78,22 @@ foreach($_FILES['files']['tmp_name'] as $key => $tmp_name ){
                 die("Some how file exist?");
             } else {
                 $caption = "";
-				$username = "";
-				$password = "";
+                $username = "";
+                $password = "";
                 if (!empty($_POST["caption"])) {
                     $caption = $_POST["caption"];
                 }
-				if (!empty($_POST["password"])) {
+                if (!empty($_POST["password"])) {
                     $password = $_POST["password"];
                 }
-				if (!empty($_POST["username"])) {
+                if (!empty($_POST["username"])) {
                     $username = $_POST["username"];
                 }
-			
+
                 move_uploaded_file($_FILES['files']['tmp_name'][$key], "uploads/" . $random_name . "." . $extension);
                 $fileName = $random_name . "." . $extension;
                 $instagram = new InstagramUploader($username, $password, $caption, $fileName);
-                $instagram->postImage();
+                $instagram->PostImage();
                 echo "$fileName uploaded";
             }
         }
@@ -101,83 +101,3 @@ foreach($_FILES['files']['tmp_name'] as $key => $tmp_name ){
         echo 'Invalid file, supported types. ["gif", "jpeg", "jpg", "png"]';
     }
 }
-
-   /* $temp = explode(".", $_FILES["file"]["name"]);
-    $extension = end($temp);
-    $random_name = randomString(7);
-    if ((($_FILES["file"]["type"] == "image/gif") || ($_FILES["file"]["type"] == "image/jpeg") || ($_FILES["file"]["type"] == "image/jpg") || ($_FILES["file"]["type"] == "image/pjpeg") || ($_FILES["file"]["type"] == "image/x-png") || ($_FILES["file"]["type"] == "image/png")) && ($_FILES["file"]["size"] < 20000000) && in_array($extension, $allowedExts))
-    {
-        if ($_FILES["file"]["error"] > 0)
-        {
-            echo "Return Code: " . $_FILES["file"]["error"] . "<br />";
-            die();
-        }
-        else
-        {
-            if (file_exists("uploads/" . $random_name . "." . $extension))
-            {
-                die("Some how file exist?");
-            }
-            else
-            {
-                $caption = "";
-                if (!empty($_POST["caption"])) {
-                    $caption = $_POST["caption"];
-                }
-                move_uploaded_file($_FILES["file"]["tmp_name"], "uploads/" . $random_name . "." . $extension);
-                $fileName = $random_name . "." . $extension;
-                $instagram = new InstagramUploader('automationbot', '', $caption, $fileName);
-                $instagram->postImage();
-                echo "$fileName uploaded";
-            }
-        }
-    }
-    else
-    {
-        echo 'Invalid file, supported types. ["gif", "jpeg", "jpg", "png", "txt"]1';
-
-    }
-}
-else
-    if (!empty($_POST["url"]))
-    {
-        $caption = "";
-        if (!empty($_POST["caption"])) {
-            $caption = $_POST["caption"];
-        }
-
-        $url = $_POST["url"];
-        $filename_arr = explode(".", $url);
-        $count_of_elements = count($filename_arr);
-        $file_extension = $filename_arr[$count_of_elements - 1];
-        if (strpos($url, 'pastebin') !== false)
-        {
-            preg_match("~http://pastebin.com/([0-9a-zA-Z]+)~", $url, $match);
-            $url = "http://pastebin.com/raw.php?i=$match[1]";
-            $file_extension = "txt";
-        }
-        $handle = curl_init($url);
-        curl_setopt($handle, CURLOPT_VERBOSE, true);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
-        curl_exec($handle);
-        $content_type = curl_getinfo($handle, CURLINFO_CONTENT_TYPE);
-        $size = curl_getinfo($handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-        if (((strpos($content_type, 'image/gif') !== false) || (strpos($content_type, 'image/jpeg') !== false) || (strpos($content_type, 'image/jpg') !== false) || (strpos($content_type, 'image/pjpeg') !== false) || (strpos($content_type, 'image/x-png') !== false) || (strpos($content_type, 'image/png') !== false)) && ($size < 20000000) && in_array($file_extension, $allowedExts))
-        {
-            $random_name = randomString(7);
-            file_put_contents("uploads/" . $random_name . "." . $file_extension, file_get_contents($url));
-            $fileName = $random_name . "." . $file_extension;
-            $instagram = new InstagramUploader('automationbot', '', $caption, $fileName);
-            $instagram->postImage();
-            echo "$fileName uploaded";
-        }
-        else
-        {
-            echo 'Invalid file, supported types. ["gif", "jpeg", "jpg", "png", "txt"]';
-        }
-    }
-    else
-    {
-        echo "No file uploaded!";
-    }*/
