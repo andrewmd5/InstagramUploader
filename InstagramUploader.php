@@ -12,14 +12,14 @@ class InstagramUploader
     public $username;
     public $password;
     public $caption;
-    public $agent = 'Instagram 6.21.2 Android (19/4.4.2; 480dpi; 1152x1920; Meizu; MX4; mx4; mt6595; en_US)';
+    public $userAgent = 'Instagram 6.21.2 Android (19/4.4.2; 480dpi; 1152x1920; Meizu; MX4; mx4; mt6595; en_US)';
     public $fileName;
     public $instagramSignature = '25eace5393646842f0d0c3fb2ac7d3cfa15c052436ee86b5406a8433f54d24a5';
     public $unlinkPaths = array();
 
     function __construct($username, $password, $caption, $fileName)
     {
-		  session_start();
+        session_start();
         $this->username = $username;
         $this->password = $password;
         $this->caption = $caption;
@@ -44,7 +44,7 @@ class InstagramUploader
         return hash_hmac('sha256', $data, $this->instagramSignature);
     }
 
-    private function convertImage($originalImage, $outputImage, $quality)
+    private function ConvertImage($originalImage, $outputImage, $quality)
     {
         // jpg, png, gif or bmp?
         $exploded = explode('.', $originalImage);
@@ -68,7 +68,7 @@ class InstagramUploader
         return 1;
     }
 
-    private function squareImage($imgSrc, $imgDes, $thumbSize = 1000)
+    private function SquareImage($imgSrc, $imgDes, $thumbSize = 1000)
     {
         list($width, $height) = getimagesize($imgSrc);
         $myImage = imagecreatefromjpeg($imgSrc);
@@ -98,21 +98,14 @@ class InstagramUploader
             echo "The image doesn't exist " . $path;
         } else {
             $withoutExt = preg_replace('/\\.[^.\\s]{3,4}$/', '', $filename);
-            $convertImageToJpg = $this->convertImage($path, './uploads/' . 'converted_' . $withoutExt . '.jpg', 100);
+            $convertImageToJpg = $this->ConvertImage($path, './uploads/' . 'converted_' . $withoutExt . '.jpg', 100);
             if ($convertImageToJpg) {
                 $convertedPath =  getcwd() .'/uploads/' . 'converted_' . $withoutExt . '.jpg';
                 $instagramPath =  getcwd() .'/uploads/' . 'instagram_' . $withoutExt . '.jpg';
-                $this->squareImage($convertedPath, $instagramPath);
+                $this->SquareImage($convertedPath, $instagramPath);
                 $post_data = array('device_timestamp' => time(),
                     'photo' => '@' . $instagramPath);
                 array_push($this->unlinkPaths, $convertedPath, $path, $instagramPath);
-                // if ( file_exists(  $convertedPath ) ) {
-                //    unlink( $convertedPath );
-                // }
-
-                //  if ( file_exists($path ) ) {
-                //      unlink( $path );
-                //  }
                 return $post_data;
             }
 
@@ -128,44 +121,42 @@ class InstagramUploader
 
         $sig = $this->GenerateSignature($data);
         $data = 'signed_body=' . $sig . '.' . urlencode($data) . '&ig_sig_key_version=6';
-        $login = $this->SendRequest('accounts/login/', true, $data, $this->agent, false);
+        $login = $this->SendRequest('accounts/login/', true, $data, $this->userAgent, false);
         if (strpos($login[1], "Sorry, an error occurred while processing this request.")) {
             echo "Request failed, there's a chance that this proxy/ip is blocked";
-            $this->cleanImages();
+            $this->CleanImages();
         } else {
             if (empty($login[1])) {
                 echo "Empty response received from the server while trying to login";
-                $this->cleanImages();
+                $this->CleanImages();
             } else {
                 // Decode the array that is returned
                 $obj = @json_decode($login[1], true);
 
                 if (empty($obj)) {
                     echo "Could not decode the response: ";
-                    $this->cleanImages();
+                    $this->CleanImages();
                 } else {
                     // Post the picture
                     $data = $this->GetPostData($this->fileName);
-                    $post = $this->SendRequest('media/upload/', true, $data, $this->agent, true);
-					var_dump($post);
+                    $post = $this->SendRequest('media/upload/', true, $data, $this->userAgent, true);
+                    var_dump($post);
                     if (empty($post[1])) {
                         echo "Empty response received from the server while trying to post the image";
-                        $this->cleanImages();
+                        $this->CleanImages();
                     } else {
-                      
+
                         $obj = @json_decode($post[1], true);
 
                         if (empty($obj)) {
                             echo "Could not decode the response";
-                            $this->cleanImages();
+                            $this->CleanImages();
                         } else {
                             $status = $obj['status'];
 
                             if ($status == 'ok') {
                                 // Remove and line breaks from the caption
                                 $caption = preg_replace("/\r|\n/", "", $this->caption);
-                               
-
                                 $media_id = $obj['media_id'];
                                 $device_id = "android-" . $guid;
                                 $data = '{"device_id":"' . $device_id . '","guid":"' . $guid . '","media_id":"' . $media_id . '","caption":"' . trim($caption) . '","device_timestamp":"' . time() . '","source_type":"5","filter_type":"0","extra":"{}","Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"}';
@@ -173,31 +164,31 @@ class InstagramUploader
                                 $new_data = 'signed_body=' . $sig . '.' . urlencode($data) . '&ig_sig_key_version=4';
 
                                 // Now, configure the photo
-                                $conf = $this->SendRequest('media/configure/', true, $new_data, $this->agent, true);
+                                $conf = $this->SendRequest('media/configure/', true, $new_data, $this->userAgent, true);
 
                                 if (empty($conf[1])) {
                                     echo "Empty response received from the server while trying to configure the image";
-                                    $this->cleanImages();
+                                    $this->CleanImages();
                                 } else {
                                     if (strpos($conf[1], "login_required")) {
-                                        echo "You are not logged in. There's a chance that the account is banned";
-                                        $this->cleanImages();
+                                        echo "You are not logged in. There's a chance that the account is banned or a captcha is required";
+                                        $this->CleanImages();
                                     } else {
                                         $obj = @json_decode($conf[1], true);
                                         $status = $obj['status'];
-                                  
-                                        if ($status != 'fail') {
+                                        $failed = strpos($status, 'fail');
+                                        if (!$failed) {
                                             echo "Success";
-                                            $this->cleanImages();
+                                            $this->CleanImages();
                                         } else {
-                                            echo 'Fail';
-                                            $this->cleanImages();
+                                            echo 'Failed';
+                                            $this->CleanImages();
                                         }
                                     }
                                 }
                             } else {
                                 echo "Status isn't okay";
-                                $this->cleanImages();
+                                $this->CleanImages();
                             }
                         }
                     }
@@ -206,40 +197,41 @@ class InstagramUploader
         }
     }
 
-    private function  cleanImages()
+    private function  CleanImages()
     {
-        foreach ($this->unlinkPaths as $value) {
-         unlink($value);
+        foreach ($this->unlinkPaths as $path) {
+            //deletes images from server
+            unlink($path);
         }
     }
 
     private function SendRequest($url, $post, $post_data, $user_agent, $cookies)
     {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://i.instagram.com/api/v1/' . $url);
-        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SAFE_UPLOAD, false);
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'https://i.instagram.com/api/v1/' . $url);
+        curl_setopt($curl, CURLOPT_USERAGENT, $user_agent);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($curl, CURLOPT_SAFE_UPLOAD, false);
 
         if ($post) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-	
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
+
         }
 
         if ($cookies) {
-            curl_setopt($ch, CURLOPT_COOKIEFILE,'cookies.txt');
-       } else {
-            curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookies.txt');
-       }
+            curl_setopt($curl, CURLOPT_COOKIEFILE,'cookies.txt');
+        } else {
+            curl_setopt($curl, CURLOPT_COOKIEJAR, 'cookies.txt');
+        }
 
-        $response = curl_exec($ch);
-        $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $response = curl_exec($curl);
+        $http = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-        curl_close($ch);
+        curl_close($curl);
 
 
         return array($http, $response);
