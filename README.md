@@ -4,6 +4,8 @@
 
 This is a discontinued project of mine to create a web service for uploading photos to instagram. This code allows you to bulk upload multiple files to Instagram at once.
 
+This could should serve as reference for creating your own app. 
+
 ### It doesn't work anymore!
 
 If it suddenly stops working, you need to extract the new signature key from the instagram app. A pretty good write up on that is found [here](https://mokhdzanifaeq.github.io/extracting-instagram-signature-key-2/) and [here](https://mokhdzanifaeq.github.io/extracting-instagram-signature-key/)
