@@ -103,13 +103,15 @@ class InstagramUploader
                 $convertedPath =  getcwd() .'/uploads/' . 'converted_' . $withoutExt . '.jpg';
                 $instagramPath =  getcwd() .'/uploads/' . 'instagram_' . $withoutExt . '.jpg';
                 $this->SquareImage($convertedPath, $instagramPath);
-                $post_data = array('device_timestamp' => time(),
-                    'photo' => '@' . $instagramPath);
+                $post_data = array('device_timestamp' => time());
+                if ((version_compare(PHP_VERSION, '5.5') >= 0)) {
+                    $post_data['photo'] = new CURLFile(realpath($instagramPath));
+                } else {
+                    $aPost['photo'] = "@".realpath($instagramPath);
+                }
                 array_push($this->unlinkPaths, $convertedPath, $path, $instagramPath);
                 return $post_data;
             }
-
-
         }
     }
 
@@ -205,35 +207,30 @@ class InstagramUploader
         }
     }
 
-    private function SendRequest($url, $post, $post_data, $user_agent, $cookies)
-    {
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'https://i.instagram.com/api/v1/' . $url);
-        curl_setopt($curl, CURLOPT_USERAGENT, $user_agent);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+    private function SendRequest($url, $post, $post_data, $user_agent, $cookies) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://i.instagram.com/api/v1/'.$url);
+        curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($curl, CURLOPT_SAFE_UPLOAD, false);
-
-        if ($post) {
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $post_data);
-
+        if($post) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+            curl_setopt($ch, CURLOPT_SAFE_UPLOAD, true);
         }
-
-        if ($cookies) {
-            curl_setopt($curl, CURLOPT_COOKIEFILE,'cookies.txt');
+        if ((version_compare(PHP_VERSION, '5.5') >= 0)) {
+            curl_setopt($ch, CURLOPT_SAFE_UPLOAD, true);
+        } 
+        if($cookies) {
+            curl_setopt($ch, CURLOPT_COOKIEFILE,   dirname(__FILE__). '/cookies.txt');            
         } else {
-            curl_setopt($curl, CURLOPT_COOKIEJAR, 'cookies.txt');
+            curl_setopt($ch, CURLOPT_COOKIEJAR,  dirname(__FILE__). '/cookies.txt');
         }
-
-        $response = curl_exec($curl);
-        $http = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        curl_close($curl);
-
-
+        $response = curl_exec($ch);
+        $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
         return array($http, $response);
     }
 
